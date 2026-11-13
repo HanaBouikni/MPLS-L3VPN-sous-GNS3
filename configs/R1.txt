@@ -16,25 +16,25 @@ ip vrf CLIENT2
 interface Loopback0
  ip address 50.0.0.1 255.255.255.255
 !
-interface FastEthernet1/0
+interface FastEthernet0/0
  description Coeur vers R2
  ip address 10.1.2.1 255.255.255.252
  mpls ip
  no shutdown
 !
-interface FastEthernet2/0
+interface FastEthernet0/1
  description Coeur vers R3
  ip address 10.1.3.1 255.255.255.252
  mpls ip
  no shutdown
 !
-interface FastEthernet0/0
+interface FastEthernet1/0
  description CE R5 (CLIENT1)
  ip vrf forwarding CLIENT1
  ip address 40.1.0.1 255.255.255.252
  no shutdown
 !
-interface FastEthernet0/1
+interface FastEthernet2/0
  description CE R6 (CLIENT2)
  ip vrf forwarding CLIENT2
  ip address 40.2.0.1 255.255.255.252

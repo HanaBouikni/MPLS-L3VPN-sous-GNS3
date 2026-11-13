@@ -180,6 +180,36 @@ router bgp 65000
 | `show ip route vrf CLIENT1` | R1, R2, R3 | Routes de R5, R7, R9 |
 | `show ip route vrf CLIENT2` | R1, R2 | Routes de R6, R8 |
 
+### Résultats obtenus
+
+#### 1. OSPF et LDP dans le cœur (R1)
+
+![OSPF et LDP sur R1](captures/R1-ospf-ldp-neighbors.png)
+
+R1 est en adjacence OSPF **FULL** avec R2 (50.0.0.2) et R3 (50.0.0.3). Ses deux sessions **LDP** sont à l'état **Oper**, donc la distribution des labels MPLS fonctionne. Les sessions LDP utilisent les loopbacks comme identifiants (`mpls ldp router-id Loopback0 force`).
+
+#### 2. Sessions MP-BGP VPNv4 sur le Route Reflector (R4)
+
+![BGP VPNv4 sur R4](captures/R4-bgp-vpnv4-summary.png)
+
+R4 a une session VPNv4 établie avec chacun des trois PE. Le nombre de préfixes reçus correspond à la topologie :
+
+| PE | Préfixes reçus | Détail |
+|---|---|---|
+| R1 (50.0.0.1) | 4 | CLIENT1 : 60.0.0.5 + lien 40.1.0.0/30 · CLIENT2 : 70.0.0.6 + lien 40.2.0.0/30 |
+| R2 (50.0.0.2) | 4 | CLIENT1 : 60.0.0.7 + lien 40.1.0.4/30 · CLIENT2 : 70.0.0.8 + lien 40.2.0.4/30 |
+| R3 (50.0.0.3) | 2 | CLIENT1 : 60.0.0.9 + lien 40.1.0.8/30 |
+
+#### 3. Table de routage de la VRF CLIENT1 (R1)
+
+![Table VRF CLIENT1 sur R1](captures/R1-route-vrf-client1.png)
+
+La VRF CLIENT1 de R1 contient les loopbacks des **trois sites du client 1** :
+- `60.0.0.5` a une distance de **20** (eBGP) : elle est apprise directement auprès du CE local R5 (40.1.0.2).
+- `60.0.0.7` et `60.0.0.9` ont une distance de **200** (iBGP) : elles sont apprises en VPNv4 via R4 et ont pour next-hop les loopbacks des PE distants (50.0.0.2 = R2, 50.0.0.3 = R3).
+
+Cette table ne contient aucune route du client 2 (70.0.0.x), ce qui confirme l'isolation entre les VRF.
+
 ### Tests de connectivité
 
 | Test | Depuis | Résultat attendu |
@@ -210,7 +240,10 @@ MPLS-L3VPN-sous-GNS3/
 ├── configs/            # Configuration de chaque routeur (R1 à R9)
 │   ├── R1.txt ... R9.txt
 └── captures/           # Captures d'écran GNS3 et résultats des tests
-    └── topologie-gns3.png
+    ├── topologie-gns3.png
+    ├── R1-ospf-ldp-neighbors.png
+    ├── R4-bgp-vpnv4-summary.png
+    └── R1-route-vrf-client1.png
 ```
 
 ---
