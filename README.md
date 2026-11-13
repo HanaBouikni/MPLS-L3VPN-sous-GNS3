@@ -210,10 +210,24 @@ La VRF CLIENT1 de R1 contient les loopbacks des **trois sites du client 1** :
 
 Cette table ne contient aucune route du client 2 (70.0.0.x), ce qui confirme l'isolation entre les VRF.
 
+#### 4. Ping entre deux sites du même client (R5 → R7)
+
+![Ping R5 vers R7](captures/ping-R5-vers-R7-succes.png)
+
+R5 (site 1 du client 1, derrière R1) joint R7 (site 2 du client 1, derrière R2) sur son adresse 40.1.0.6 avec un taux de **100 %**. Le trafic passe par le backbone MPLS : il entre en VRF CLIENT1 sur R1, est commuté par labels jusqu'à R2, puis remis à R7.
+
+#### 5. Ping entre deux clients différents (R5 → R6) : isolation
+
+![Ping R5 vers R6](captures/ping-R5-vers-R6-echec.png)
+
+R5 (client 1) ne peut pas joindre R6 (client 2, 40.2.0.2) : le taux est de **0 %**. Pourtant, les deux CE sont branchés sur **le même PE (R1)**. Le réseau 40.2.0.0/30 n'existe que dans la VRF CLIENT2, et R1 ne peut le chercher que dans la table de routage CLIENT1. Comme les RT sont différents (65000:10 / 65000:20), aucune route n'est importée d'une VRF à l'autre. **C'est la preuve que les deux VPN sont isolés.**
+
 ### Tests de connectivité
 
 | Test | Depuis | Résultat attendu |
 |---|---|---|
+| `ping 40.1.0.6` | R5 → R7 | ✅ Succès (même client), voir capture 4 |
+| `ping 40.2.0.2` | R5 → R6 | ❌ Échec (clients différents), voir capture 5 |
 | `ping 60.0.0.7 source 60.0.0.5` | R5 → R7 | ✅ Succès (même client) |
 | `ping 60.0.0.9 source 60.0.0.5` | R5 → R9 | ✅ Succès (même client) |
 | `ping 70.0.0.8 source 70.0.0.6` | R6 → R8 | ✅ Succès (même client) |
@@ -243,7 +257,9 @@ MPLS-L3VPN-sous-GNS3/
     ├── topologie-gns3.png
     ├── R1-ospf-ldp-neighbors.png
     ├── R4-bgp-vpnv4-summary.png
-    └── R1-route-vrf-client1.png
+    ├── R1-route-vrf-client1.png
+    ├── ping-R5-vers-R7-succes.png
+    └── ping-R5-vers-R6-echec.png
 ```
 
 ---
