@@ -1,0 +1,15 @@
+! R7 - CE (CLIENT1, via R2)
+hostname R7
+!
+interface FastEthernet0/0
+ ip address 40.1.0.6 255.255.255.252
+ no shutdown
+!
+interface Loopback0
+ ip address 60.0.0.7 255.255.255.255
+!
+router bgp 65010
+ neighbor 40.1.0.5 remote-as 65000
+ network 60.0.0.7 mask 255.255.255.255
+!
+end

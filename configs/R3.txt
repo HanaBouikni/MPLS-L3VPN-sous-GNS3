@@ -1,0 +1,54 @@
+! R3 - PE (VRF CLIENT1 uniquement)
+hostname R3
+!
+ip cef
+!
+ip vrf CLIENT1
+ rd 65000:10
+ route-target export 65000:10
+ route-target import 65000:10
+!
+interface Loopback0
+ ip address 50.0.0.3 255.255.255.255
+!
+interface FastEthernet0/0
+ description Coeur vers R1
+ ip address 10.1.3.2 255.255.255.252
+ mpls ip
+ no shutdown
+!
+interface FastEthernet0/1
+ description Coeur vers R4
+ ip address 10.3.4.1 255.255.255.252
+ mpls ip
+ no shutdown
+!
+interface FastEthernet1/0
+ description CE R9 (CLIENT1)
+ ip vrf forwarding CLIENT1
+ ip address 40.1.0.9 255.255.255.252
+ no shutdown
+!
+mpls label protocol ldp
+mpls ldp router-id Loopback0 force
+!
+router ospf 1
+ network 10.1.3.0 0.0.0.3 area 0
+ network 10.3.4.0 0.0.0.3 area 0
+ network 50.0.0.3 0.0.0.0 area 0
+!
+router bgp 65000
+ neighbor 50.0.0.4 remote-as 65000
+ neighbor 50.0.0.4 update-source Loopback0
+ address-family vpnv4
+  neighbor 50.0.0.4 activate
+  neighbor 50.0.0.4 send-community extended
+ exit-address-family
+ address-family ipv4 vrf CLIENT1
+  neighbor 40.1.0.10 remote-as 65010
+  neighbor 40.1.0.10 activate
+  neighbor 40.1.0.10 as-override
+  redistribute connected
+ exit-address-family
+!
+end

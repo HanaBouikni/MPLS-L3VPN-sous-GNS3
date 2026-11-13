@@ -1,0 +1,15 @@
+! R8 - CE (CLIENT2, via R2)
+hostname R8
+!
+interface FastEthernet0/0
+ ip address 40.2.0.6 255.255.255.252
+ no shutdown
+!
+interface Loopback0
+ ip address 70.0.0.8 255.255.255.255
+!
+router bgp 65020
+ neighbor 40.2.0.5 remote-as 65000
+ network 70.0.0.8 mask 255.255.255.255
+!
+end
